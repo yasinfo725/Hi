@@ -1,79 +1,344 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="bn">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#08111b">
-<title>Smart Vision AI Pro</title>
-<style>
-*{box-sizing:border-box}body{margin:0;background:#08111b;color:#f4f8fc;font-family:Arial,"Noto Sans Bengali",sans-serif}
-header{text-align:center;padding:20px 12px;background:#101d2b;border-bottom:1px solid #2a4054}
-h1{margin:0;color:#53e6b0;font-size:26px}header p{color:#a8bacb;font-size:13px;margin:8px 0 0}
-main{max-width:780px;margin:auto;padding:12px}.camera{position:relative;aspect-ratio:4/3;background:#000;border:1px solid #2a4054;border-radius:14px;overflow:hidden}
-video,canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}canvas{pointer-events:none}
-.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:11px 0}
-button{border:0;border-radius:10px;padding:13px 8px;background:#27bd88;color:#061710;font-weight:bold;font-size:14px;min-height:45px}
-button.alt{background:#2a3d51;color:white}button:disabled{opacity:.45}
-.status,.panel,.stat,.item{background:#142333;border:1px solid #2a4054;border-radius:11px;padding:12px}
-.status{margin:12px 0;color:#53e6b0;font-size:13px;line-height:1.55}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat small{color:#a8bacb;font-size:11px}.stat strong{display:block;color:#53e6b0;font-size:20px;margin-top:5px}
-h2{font-size:17px;margin:19px 0 9px}.panel{margin-top:13px}.muted{color:#a8bacb;font-size:12px;line-height:1.6}
-label{display:block;color:#a8bacb;font-size:12px;margin:10px 0 5px}input,select{width:100%;padding:12px;background:#091522;color:white;border:1px solid #2a4054;border-radius:9px;font-size:14px}
-.row{display:flex;gap:8px;margin-top:9px}.row>*{flex:1}.item{margin:8px 0;font-size:13px;line-height:1.65;border-left:3px solid #53e6b0}
-.pill{color:#53e6b0;background:#1b3c38;border-radius:20px;padding:2px 7px;font-size:11px}
-.warn{background:#282516;border:1px solid #51472a;color:#e6d8a8;padding:11px;border-radius:10px;font-size:12px;line-height:1.65;margin-top:12px}
-footer{text-align:center;color:#8294a7;font-size:11px;padding:18px}
-@media(max-width:430px){h1{font-size:23px}.stats{grid-template-columns:1fr 1fr}.stat:last-child{grid-column:span 2}}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>স্মার্ট মোশন ডিটেক্টর</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        header h1 {
+            color: #38bdf8;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        header p {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+        .camera-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 3px solid #334155;
+            background-color: #000;
+            aspect-ratio: 4/3;
+        }
+        video, canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .status-box {
+            margin-top: 15px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            transition: all 0.2s ease;
+        }
+        .motion-detected {
+            background-color: #dc2626 !important;
+            color: #ffffff !important;
+            border-color: #f87171 !important;
+            box-shadow: 0 0 15px rgba(220, 38, 38, 0.6);
+        }
+        .controls {
+            margin-top: 15px;
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background-color: #1e293b;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        button:active {
+            opacity: 0.8;
+        }
+        #startBtn {
+            background-color: #10b981;
+            color: white;
+        }
+        #stopBtn {
+            background-color: #ef4444;
+            color: white;
+            display: none;
+        }
+        .slider-container {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .slider-container label {
+            font-size: 14px;
+            color: #cbd5e1;
+            display: flex;
+            justify-content: space-between;
+        }
+        input[type="range"] {
+            width: 100%;
+            accent-color: #38bdf8;
+        }
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #cbd5e1;
+        }
+    </style>
 </head>
 <body>
-<header><h1>SMART VISION AI PRO</h1><p>Live Object Detection · AI Scene Understanding · Tracking</p></header>
-<main>
-<div class="camera"><video id="video" autoplay playsinline muted></video><canvas id="canvas"></canvas></div>
-<div class="actions"><button id="start" disabled>ক্যামেরা চালু করুন</button><button id="stop" class="alt" disabled>ক্যামেরা বন্ধ</button></div>
-<div class="status" id="status">AI ইঞ্জিন লোড হচ্ছে… ইন্টারনেট চালু রাখুন।</div>
-<div class="stats">
- <div class="stat"><small>LIVE OBJECTS</small><strong id="count">0</strong></div>
- <div class="stat"><small>TRACKED IDs</small><strong id="tracks">0</strong></div>
- <div class="stat"><small>SCENE AI</small><strong id="sceneState">প্রস্তুত</strong></div>
-</div>
-<section class="panel">
- <h2 style="margin-top:0">বিস্তৃত AI Scene Understanding</h2>
- <p class="muted">ক্যামেরার দ্রুত শনাক্তকরণ ডিভাইসেই চলবে। অতিরিক্ত বিস্তৃত দৃশ্য-বর্ণনার জন্য ঐচ্ছিক Gemini API সংযোগ রয়েছে। API বিশ্লেষণ প্রতিবার একটি স্থির ছবি পাঠায়—এটি অবিরাম ভিডিও বিশ্লেষণ নয়।</p>
- <label for="key">Gemini API key (ঐচ্ছিক)</label>
- <input id="key" type="password" autocomplete="off" placeholder="নিজের API key লিখুন">
- <div class="row"><button id="apply" class="alt">এই সেশনে ব্যবহার</button><button id="analyze" disabled>এখন বিশ্লেষণ</button></div>
- <label for="interval">স্বয়ংক্রিয় বিশ্লেষণের বিরতি</label>
- <select id="interval"><option value="0">বন্ধ (ম্যানুয়াল)</option><option value="30000" selected>৩০ সেকেন্ড</option><option value="60000">৬০ সেকেন্ড</option></select>
- <div class="item" id="scene">AI দৃশ্য-বর্ণনা এখানে দেখা যাবে।</div>
-</section>
-<h2>শনাক্ত হওয়া বস্তু</h2><div id="list"><div class="item">ক্যামেরা চালু করলে ফলাফল দেখা যাবে।</div></div>
-<div class="warn"><b>জেনে রাখো:</b> এই সংস্করণে COCO-SSD দ্রুত ৮০টি পরিচিত শ্রেণির বস্তু শনাক্ত করে। Gemini ছবির দৃশ্য আরও বিস্তৃতভাবে বর্ণনা করতে পারে, কিন্তু সেটি প্রতিটি বস্তুর নির্ভুল বাউন্ডিং বক্স বা নিশ্চিত পরিচয় দিতে পারে না। সব বস্তু শতভাগ চিনতে পারে—এমন কোনো মডেল নেই। দূরত্ব আনুমানিক; নির্ভুল মাপের জন্য ক্যালিব্রেশন বা Depth Sensor দরকার। API-তে পাঠানো ছবি তৃতীয় পক্ষের সার্ভারে যায়। API key এই পেজে ব্যবহার করলে ব্রাউজারে দেখা সম্ভব; পাবলিক ওয়েবসাইটে key প্রকাশ কোরো না। API ব্যবহারে সীমা/খরচ থাকতে পারে—অজানা বিলিং চালু কোরো না।</div>
-</main>
-<footer>SMART VISION AI PRO · Balanced online-assisted mode</footer>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
-<script>
-"use strict";
-const el=id=>document.getElementById(id),video=el("video"),canvas=el("canvas"),ctx=canvas.getContext("2d");
-let model=null,stream=null,running=false,busy=false,timer=null,sceneTimer=null,apiKey="",nextId=1,trackMap=new Map();
-const FOV=60;
-const widths={person:.45,cat:.22,dog:.30,car:1.8,bicycle:.6,motorcycle:.8,bus:2.5,truck:2.4,chair:.5,bottle:.07,cup:.09,backpack:.3,laptop:.33,book:.15,cell_phone:.08,bird:.15,horse:.6,sheep:.45,cow:.75,tv:.9,keyboard:.45,mouse:.07,umbrella:.9,banana:.18,apple:.08,train:2.8};
-const bn={person:"মানুষ",cat:"বিড়াল",dog:"কুকুর",car:"গাড়ি",bicycle:"সাইকেল",motorcycle:"মোটরসাইকেল",bus:"বাস",truck:"ট্রাক",chair:"চেয়ার",bottle:"বোতল",cup:"কাপ",backpack:"ব্যাগ",laptop:"ল্যাপটপ",book:"বই",cell_phone:"মোবাইল ফোন",bird:"পাখি",horse:"ঘোড়া",sheep:"ভেড়া",cow:"গরু",tv:"টেলিভিশন",keyboard:"কিবোর্ড",mouse:"মাউস",umbrella:"ছাতা",banana:"কলা",apple:"আপেল",train:"ট্রেন"};
-function status(t){el("status").textContent=t}
-function resize(){if(video.videoWidth){canvas.width=video.videoWidth;canvas.height=video.videoHeight}}
-function angle(cx){const half=canvas.width/2,f=half/Math.tan(FOV*Math.PI/360);return Math.atan((cx-half)/f)*180/Math.PI}
-function distance(cls,pw){if(!widths[cls]||!pw)return null;const f=(canvas.width/2)/Math.tan(FOV*Math.PI/360);return widths[cls]*f/pw}
-function overlap(a,b){const x1=Math.max(a[0],b[0]),y1=Math.max(a[1],b[1]),x2=Math.min(a[0]+a[2],b[0]+b[2]),y2=Math.min(a[1]+a[3],b[1]+b[3]),i=Math.max(0,x2-x1)*Math.max(0,y2-y1);return i/(a[2]*a[3]+b[2]*b[3]-i||1)}
-function assignIds(preds){const now=Date.now(),used=new Set();return preds.map(p=>{let id=null,best=.22;for(const [k,t] of trackMap){if(used.has(k)||t.cls!==p.class)continue;const s=overlap(t.box,p.bbox);if(s>best){best=s;id=k}}if(id===null)id=nextId++;used.add(id);trackMap.set(id,{cls:p.class,box:p.bbox,time:now});return {...p,id}}).filter(p=>true)}
-async function load(){try{if(!window.cocoSsd)throw Error("AI লাইব্রেরি লোড হয়নি");model=await cocoSsd.load({base:"lite_mobilenet_v2"});el("start").disabled=false;el("analyze").disabled=false;status("AI প্রস্তুত ✓ ক্যামেরা চালু করুন।")}catch(e){status("AI লোড হয়নি—ইন্টারনেট পরীক্ষা করে রিফ্রেশ করুন।")}}
-async function start(){if(!model)return;stop(false);try{if(!navigator.mediaDevices?.getUserMedia)throw Error("ক্যামেরার জন্য HTTPS বা localhost প্রয়োজন");stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:"environment"},width:{ideal:960},height:{ideal:540}}});video.srcObject=stream;await video.play();resize();running=true;el("start").disabled=true;el("stop").disabled=false;status("ক্যামেরা চালু ✓ লাইভ স্ক্যান চলছে।");detect();scheduleScene()}catch(e){status("ক্যামেরা চালু হয়নি: "+e.message+"। Chrome permission Allow করুন এবং HTTPS লিংক ব্যবহার করুন।")}}
-function stop(show=true){running=false;clearTimeout(timer);clearTimeout(sceneTimer);if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}video.srcObject=null;ctx.clearRect(0,0,canvas.width,canvas.height);el("start").disabled=!model;el("stop").disabled=true;el("count").textContent="0";el("tracks").textContent="0";if(show)status("ক্যামেরা বন্ধ।")}
-async function detect(){if(!running||busy||video.readyState<2){if(running)timer=setTimeout(detect,200);return}busy=true;try{const preds=await model.detect(video,25,.48);if(!running)return;resize();ctx.clearRect(0,0,canvas.width,canvas.height);const found=assignIds(preds.filter(p=>p.score>=.48));let html="";for(const p of found){const [x,y,w,h]=p.bbox,cx=x+w/2,a=angle(cx),d=distance(p.class,w),name=bn[p.class]||p.class;ctx.strokeStyle="#53e6b0";ctx.lineWidth=Math.max(2,canvas.width/450);ctx.strokeRect(x,y,w,h);const label=name+" #"+p.id+" "+Math.round(p.score*100)+"%";const fs=Math.max(14,canvas.width/58);ctx.font="bold "+fs+"px Arial";const ty=Math.max(fs+10,y);ctx.fillStyle="#087d5b";ctx.fillRect(x,ty-fs-8,ctx.measureText(label).width+12,fs+12);ctx.fillStyle="#fff";ctx.fillText(label,x+6,ty-2);html+='<div class="item"><b>'+name+'</b> <span class="pill">ID '+p.id+'</span><br><span class="muted">নির্ভরযোগ্যতা: '+(p.score*100).toFixed(1)+'%</span><br>দূরত্ব: <b>'+(d===null?"মাপ নেই":d.toFixed(2)+" মিটার (আনুমানিক)")+'</b> · কোণ: <b>'+(a>=0?"+":"")+a.toFixed(1)+'°</b></div>'}el("count").textContent=found.length;el("tracks").textContent=new Set(found.map(p=>p.id)).size;el("list").innerHTML=html||'<div class="item">কোনো বস্তু শনাক্ত হয়নি।</div>'}catch(e){console.error(e);status("ডিটেকশনে সাময়িক সমস্যা হয়েছে।")}finally{busy=false;if(running)timer=setTimeout(detect,180)}}
-el("apply").onclick=()=>{apiKey=el("key").value.trim();status(apiKey?"API key এই সেশনে ব্যবহার করা হবে।":"API key দেওয়া হয়নি।");scheduleScene()};
-async function analyze(){if(!running){el("scene").textContent="আগে ক্যামেরা চালু করুন।";return}if(!apiKey){el("scene").textContent="Gemini API key যোগ করে ‘এই সেশনে ব্যবহার’ চাপুন।";return}el("scene").textContent="ছবির দৃশ্য বিশ্লেষণ হচ্ছে…";el("sceneState").textContent="চলছে";try{const snap=document.createElement("canvas");snap.width=640;snap.height=Math.round(640*video.videoHeight/video.videoWidth);snap.getContext("2d").drawImage(video,0,0,snap.width,snap.height);const data=snap.toDataURL("image/jpeg",.65).split(",")[1];const prompt="এই ছবিতে স্পষ্টভাবে দৃশ্যমান বস্তুগুলো বাংলায় তালিকা করো। প্রতিটির অবস্থান (বাম/মাঝে/ডান), রং এবং দৃশ্যমান কাজ সংক্ষেপে বলো। নিশ্চিত নও এমন পরিচয় অনুমান কোরো না। দূরত্ব বা পরিচয় নিশ্চিত বলে দাবি কোরো না।";const res=await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent",{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":apiKey},body:JSON.stringify({contents:[{parts:[{text:prompt},{inline_data:{mime_type:"image/jpeg",data}}]}],generationConfig:{temperature:.2,maxOutputTokens:450}})});const json=await res.json();if(!res.ok)throw Error(json?.error?.message||"API request failed");el("scene").textContent=json?.candidates?.[0]?.content?.parts?.map(p=>p.text||"").join("\n")||"কোনো বর্ণনা পাওয়া যায়নি।";el("sceneState").textContent="সম্পন্ন"}catch(e){el("scene").textContent="বিশ্লেষণ ব্যর্থ: "+e.message;el("sceneState").textContent="ত্রুটি"}}
-function scheduleScene(){clearTimeout(sceneTimer);const ms=Number(el("interval").value);if(running&&apiKey&&ms>0)sceneTimer=setTimeout(async()=>{await analyze();scheduleScene()},ms)}
-el("analyze").onclick=analyze;el("interval").onchange=scheduleScene;el("start").onclick=start;el("stop").onclick=()=>stop();load();
-</script>
+
+    <header>
+        <h1>MOTION DETECTOR PRO</h1>
+        <p>রিয়েল-টাইম নড়াচড়া শনাক্তকরণ সিস্টেম</p>
+    </header>
+
+    <div class="camera-container" id="camBox">
+        <video id="video" autoplay playsinline muted></video>
+        <canvas id="overlayCanvas"></canvas>
+    </div>
+
+    <div class="status-box" id="statusBox">ক্যামেরা বন্ধ আছে</div>
+
+    <div class="controls">
+        <div class="btn-group">
+            <button id="startBtn">ক্যামেরা চালু করুন</button>
+            <button id="stopBtn">ক্যামেরা বন্ধ করুন</button>
+        </div>
+
+        <div class="slider-container">
+            <label for="sensitivity">
+                <span>সংবেদনশীলতা (Sensitivity):</span>
+                <span id="sensValue">মাঝারি (25)</span>
+            </label>
+            <!-- মান যত কম হবে, সামান্য নড়াচড়াও তত বেশি ধরবে -->
+            <input type="range" id="sensitivity" min="5" max="80" value="25">
+        </div>
+
+        <div class="checkbox-container">
+            <input type="checkbox" id="soundAlert" checked>
+            <label for="soundAlert">নড়াচড়া ধরলে অ্যালার্ম সাউন্ড বাজবে</label>
+        </div>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const overlayCanvas = document.getElementById('overlayCanvas');
+        const overlayCtx = overlayCanvas.getContext('2d');
+        const statusBox = document.getElementById('statusBox');
+        const camBox = document.getElementById('camBox');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const sensitivitySlider = document.getElementById('sensitivity');
+        const sensValueText = document.getElementById('sensValue');
+        const soundAlertCheckbox = document.getElementById('soundAlert');
+
+        // প্রসেসিংয়ের জন্য অফ-স্ক্রিন ক্যানভাস (ছোট রেজোলিউশনে দ্রুত কাজ করার জন্য)
+        const processCanvas = document.createElement('canvas');
+        const processCtx = processCanvas.getContext('2d', { willReadFrequently: true });
+        const procWidth = 80;
+        const procHeight = 60;
+        processCanvas.width = procWidth;
+        processCanvas.height = procHeight;
+
+        let stream = null;
+        let isRunning = false;
+        let previousFrameData = null;
+        let animationId = null;
+        let audioCtx = null;
+        let lastBeepTime = 0;
+
+        // সংবেদনশীলতা স্লাইডার আপডেট
+        sensitivitySlider.addEventListener('input', (e) => {
+            const val = e.target.value;
+            let label = 'মাঝারি';
+            if (val < 18) label = 'অতি সংবেদনশীল';
+            else if (val > 45) label = 'কম সংবেদনশীল';
+            sensValueText.textContent = `${label} (${val})`;
+        });
+
+        // অ্যালার্ম বীপ সাউন্ড তৈরি (কোনো অডিও ফাইল ছাড়াই)
+        function playBeep() {
+            if (!soundAlertCheckbox.checked) return;
+            const now = Date.now();
+            if (now - lastBeepTime < 600) return; // প্রতি ০.৬ সেকেন্ড পরপর বীপ
+            lastBeepTime = now;
+
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // 880Hz টোন
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.15);
+        }
+
+        // ক্যামেরা চালু করা
+        startBtn.addEventListener('click', async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'environment' }, // ফোনের পেছনের ক্যামেরা ব্যবহার করবে
+                    audio: false
+                });
+                video.srcObject = stream;
+                video.onloadedmetadata = () => {
+                    overlayCanvas.width = video.videoWidth;
+                    overlayCanvas.height = video.videoHeight;
+                    isRunning = true;
+                    previousFrameData = null;
+                    startBtn.style.display = 'none';
+                    stopBtn.style.display = 'block';
+                    statusBox.textContent = 'স্ক্যান চলছে... কোনো নড়াচড়া নেই';
+                    detectMotion();
+                };
+            } catch (err) {
+                alert('ক্যামেরা চালু করা যায়নি! পারমিশন চেক করুন।');
+                console.error(err);
+            }
+        });
+
+        // ক্যামেরা বন্ধ করা
+        stopBtn.addEventListener('click', () => {
+            isRunning = false;
+            if (animationId) cancelAnimationFrame(animationId);
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            video.srcObject = null;
+            overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+            startBtn.style.display = 'block';
+            stopBtn.style.display = 'none';
+            statusBox.classList.remove('motion-detected');
+            camBox.style.borderColor = '#334155';
+            statusBox.textContent = 'ক্যামেরা বন্ধ আছে';
+        });
+
+        // মূল মোশন ডিটেকশন লজিক
+        function detectMotion() {
+            if (!isRunning) return;
+
+            processCtx.drawImage(video, 0, 0, procWidth, procHeight);
+            const currentFrame = processCtx.getImageData(0, 0, procWidth, procHeight);
+            const currentData = currentFrame.data;
+
+            overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+
+            if (previousFrameData) {
+                const threshold = parseInt(sensitivitySlider.value, 10);
+                let changedPixels = 0;
+
+                // নড়াচড়ার সীমানা (Bounding Box) নির্ণয়ের ভেরিয়েবল
+                let minX = procWidth, minY = procHeight, maxX = 0, maxY = 0;
+
+                for (let y = 0; y < procHeight; y++) {
+                    for (let x = 0; x < procWidth; x++) {
+                        const i = (y * procWidth + x) * 4;
+
+                        // RGB কালারের পার্থক্য হিসাব করা
+                        const rDiff = Math.abs(currentData[i] - previousFrameData[i]);
+                        const gDiff = Math.abs(currentData[i + 1] - previousFrameData[i + 1]);
+                        const bDiff = Math.abs(currentData[i + 2] - previousFrameData[i + 2]);
+
+                        const avgDiff = (rDiff + gDiff + bDiff) / 3;
+
+                        if (avgDiff > threshold) {
+                            changedPixels++;
+                            if (x < minX) minX = x;
+                            if (x > maxX) maxX = x;
+                            if (y < minY) minY = y;
+                            if (y > maxY) maxY = y;
+                        }
+                    }
+                }
+
+                // ন্যূনতম ১৫টি পিক্সেল পরিবর্তন হলে নড়াচড়া হিসেবে ধরা হবে (নয়েজ এড়াতে)
+                if (changedPixels > 15) {
+                    statusBox.textContent = '⚠️ সতর্কতা: নড়াচড়া শনাক্ত হয়েছে!';
+                    statusBox.classList.add('motion-detected');
+                    camBox.style.borderColor = '#ef4444';
+                    playBeep();
+
+                    // নড়াচড়া হওয়া জায়গায় লাল বক্স আঁকা
+                    const scaleX = overlayCanvas.width / procWidth;
+                    const scaleY = overlayCanvas.height / procHeight;
+
+                    const boxX = minX * scaleX;
+                    const boxY = minY * scaleY;
+                    const boxW = (maxX - minX) * scaleX;
+                    const boxH = (maxY - minY) * scaleY;
+
+                    overlayCtx.strokeStyle = '#ef4444';
+                    overlayCtx.lineWidth = 4;
+                    overlayCtx.strokeRect(boxX, boxY, boxW, boxH);
+
+                    overlayCtx.fillStyle = '#ef4444';
+                    overlayCtx.font = 'bold 18px sans-serif';
+                    overlayCtx.fillText('MOTION', boxX, boxY > 25 ? boxY - 8 : boxY + 20);
+                } else {
+                    statusBox.textContent = 'স্ক্যান চলছে... কোনো নড়াচড়া নেই';
+                    statusBox.classList.remove('motion-detected');
+                    camBox.style.borderColor = '#10b981';
+                }
+            }
+
+            // বর্তমান ফ্রেমটি পরবর্তী ফ্রেমের সাথে তুলনার জন্য সংরক্ষণ করা
+            previousFrameData = new Uint8ClampedArray(currentData);
+
+            animationId = requestAnimationFrame(detectMotion);
+        }
+    </script>
 </body>
 </html>
