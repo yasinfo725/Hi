@@ -1,279 +1,79 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="bn">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#0b1017">
-<title>Smart Vision AI</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#08111b">
+<title>Smart Vision AI Pro</title>
 <style>
-:root{color-scheme:dark}
-*{box-sizing:border-box}
-body{margin:0;background:#0b1017;color:#f4f7fb;font-family:Arial,"Noto Sans Bengali",sans-serif}
-header{padding:20px 14px 16px;text-align:center;background:#141e2b;border-bottom:1px solid #29394b}
-h1{margin:0;color:#54e6ae;font-size:27px}
-header p{margin:8px 0 0;color:#aab8c8;font-size:13px}
-main{width:min(760px,100%);margin:auto;padding:14px}
-.camera{position:relative;width:100%;aspect-ratio:4/3;overflow:hidden;border-radius:15px;background:#000;border:1px solid #304153}
-video,canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-canvas{z-index:2;pointer-events:none}
-.controls{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0}
-button{min-height:46px;padding:12px;border:0;border-radius:10px;background:#24bd86;color:#06150f;font-weight:700;font-size:14px}
-button.secondary{background:#29394c;color:#fff}
-button:disabled{opacity:.5}
-.status{padding:12px;background:#152332;border:1px solid #2b3e51;border-radius:10px;margin:12px 0;color:#54e6ae;font-size:13px;line-height:1.5}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.card,.item{background:#172332;border:1px solid #2b3e51;padding:13px;border-radius:11px}
-.small{font-size:12px;color:#9cacc0}
-.value{font-size:23px;color:#54e6ae;font-weight:bold;margin-top:6px}
-h2{font-size:17px;margin:20px 0 10px}
-#results{display:grid;gap:8px}
-.item{border-left:3px solid #54e6ae;line-height:1.65}
-.item b{color:#fff}
-.note{margin-top:14px;padding:12px;border-radius:10px;background:#211f16;color:#e7d7a5;font-size:12px;line-height:1.6}
-footer{text-align:center;color:#77899c;padding:18px 8px;font-size:11px}
-@media(max-width:380px){h1{font-size:23px}main{padding:10px}}
+*{box-sizing:border-box}body{margin:0;background:#08111b;color:#f4f8fc;font-family:Arial,"Noto Sans Bengali",sans-serif}
+header{text-align:center;padding:20px 12px;background:#101d2b;border-bottom:1px solid #2a4054}
+h1{margin:0;color:#53e6b0;font-size:26px}header p{color:#a8bacb;font-size:13px;margin:8px 0 0}
+main{max-width:780px;margin:auto;padding:12px}.camera{position:relative;aspect-ratio:4/3;background:#000;border:1px solid #2a4054;border-radius:14px;overflow:hidden}
+video,canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}canvas{pointer-events:none}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:11px 0}
+button{border:0;border-radius:10px;padding:13px 8px;background:#27bd88;color:#061710;font-weight:bold;font-size:14px;min-height:45px}
+button.alt{background:#2a3d51;color:white}button:disabled{opacity:.45}
+.status,.panel,.stat,.item{background:#142333;border:1px solid #2a4054;border-radius:11px;padding:12px}
+.status{margin:12px 0;color:#53e6b0;font-size:13px;line-height:1.55}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat small{color:#a8bacb;font-size:11px}.stat strong{display:block;color:#53e6b0;font-size:20px;margin-top:5px}
+h2{font-size:17px;margin:19px 0 9px}.panel{margin-top:13px}.muted{color:#a8bacb;font-size:12px;line-height:1.6}
+label{display:block;color:#a8bacb;font-size:12px;margin:10px 0 5px}input,select{width:100%;padding:12px;background:#091522;color:white;border:1px solid #2a4054;border-radius:9px;font-size:14px}
+.row{display:flex;gap:8px;margin-top:9px}.row>*{flex:1}.item{margin:8px 0;font-size:13px;line-height:1.65;border-left:3px solid #53e6b0}
+.pill{color:#53e6b0;background:#1b3c38;border-radius:20px;padding:2px 7px;font-size:11px}
+.warn{background:#282516;border:1px solid #51472a;color:#e6d8a8;padding:11px;border-radius:10px;font-size:12px;line-height:1.65;margin-top:12px}
+footer{text-align:center;color:#8294a7;font-size:11px;padding:18px}
+@media(max-width:430px){h1{font-size:23px}.stats{grid-template-columns:1fr 1fr}.stat:last-child{grid-column:span 2}}
 </style>
 </head>
 <body>
-<header>
-  <h1>SMART VISION AI</h1>
-  <p>Real-Time Object Detection &amp; Distance Analyzer</p>
-</header>
-
+<header><h1>SMART VISION AI PRO</h1><p>Live Object Detection · AI Scene Understanding · Tracking</p></header>
 <main>
-  <div class="camera">
-    <video id="video" autoplay playsinline muted></video>
-    <canvas id="canvas"></canvas>
-  </div>
-
-  <div class="controls">
-    <button id="startBtn" type="button">ক্যামেরা চালু করুন</button>
-    <button id="stopBtn" class="secondary" type="button" disabled>ক্যামেরা বন্ধ</button>
-  </div>
-
-  <div class="status" id="status" role="status">AI মডেল লোড হচ্ছে… ইন্টারনেট সংযোগ চালু রাখুন।</div>
-
-  <div class="grid">
-    <div class="card">
-      <div class="small">শনাক্ত হওয়া বস্তু</div>
-      <div class="value" id="count">0</div>
-    </div>
-    <div class="card">
-      <div class="small">AI MODEL</div>
-      <div class="value" style="font-size:17px">COCO-SSD</div>
-    </div>
-  </div>
-
-  <h2>শনাক্তকরণের তথ্য</h2>
-  <div id="results">
-    <div class="item">ক্যামেরা চালু করলে শনাক্ত হওয়া বস্তুর তথ্য এখানে দেখা যাবে।</div>
-  </div>
-
-  <div class="note">
-    <b>দূরত্ব সম্পর্কে গুরুত্বপূর্ণ:</b> দূরত্বটি পরিচিত গড় বস্তুর প্রস্থ ও আনুমানিক ৬০° ক্যামেরা ফিল্ড-অফ-ভিউ ধরে হিসাব করা হয়। এটি প্রকৃত/নির্ভুল মাপ নয়। সঠিক দূরত্বের জন্য ক্যালিব্রেশন বা Depth Sensor প্রয়োজন। কোণটি ক্যামেরার মাঝখান থেকে আনুমানিক অনুভূমিক কোণ।
-  </div>
+<div class="camera"><video id="video" autoplay playsinline muted></video><canvas id="canvas"></canvas></div>
+<div class="actions"><button id="start" disabled>ক্যামেরা চালু করুন</button><button id="stop" class="alt" disabled>ক্যামেরা বন্ধ</button></div>
+<div class="status" id="status">AI ইঞ্জিন লোড হচ্ছে… ইন্টারনেট চালু রাখুন।</div>
+<div class="stats">
+ <div class="stat"><small>LIVE OBJECTS</small><strong id="count">0</strong></div>
+ <div class="stat"><small>TRACKED IDs</small><strong id="tracks">0</strong></div>
+ <div class="stat"><small>SCENE AI</small><strong id="sceneState">প্রস্তুত</strong></div>
+</div>
+<section class="panel">
+ <h2 style="margin-top:0">বিস্তৃত AI Scene Understanding</h2>
+ <p class="muted">ক্যামেরার দ্রুত শনাক্তকরণ ডিভাইসেই চলবে। অতিরিক্ত বিস্তৃত দৃশ্য-বর্ণনার জন্য ঐচ্ছিক Gemini API সংযোগ রয়েছে। API বিশ্লেষণ প্রতিবার একটি স্থির ছবি পাঠায়—এটি অবিরাম ভিডিও বিশ্লেষণ নয়।</p>
+ <label for="key">Gemini API key (ঐচ্ছিক)</label>
+ <input id="key" type="password" autocomplete="off" placeholder="নিজের API key লিখুন">
+ <div class="row"><button id="apply" class="alt">এই সেশনে ব্যবহার</button><button id="analyze" disabled>এখন বিশ্লেষণ</button></div>
+ <label for="interval">স্বয়ংক্রিয় বিশ্লেষণের বিরতি</label>
+ <select id="interval"><option value="0">বন্ধ (ম্যানুয়াল)</option><option value="30000" selected>৩০ সেকেন্ড</option><option value="60000">৬০ সেকেন্ড</option></select>
+ <div class="item" id="scene">AI দৃশ্য-বর্ণনা এখানে দেখা যাবে।</div>
+</section>
+<h2>শনাক্ত হওয়া বস্তু</h2><div id="list"><div class="item">ক্যামেরা চালু করলে ফলাফল দেখা যাবে।</div></div>
+<div class="warn"><b>জেনে রাখো:</b> এই সংস্করণে COCO-SSD দ্রুত ৮০টি পরিচিত শ্রেণির বস্তু শনাক্ত করে। Gemini ছবির দৃশ্য আরও বিস্তৃতভাবে বর্ণনা করতে পারে, কিন্তু সেটি প্রতিটি বস্তুর নির্ভুল বাউন্ডিং বক্স বা নিশ্চিত পরিচয় দিতে পারে না। সব বস্তু শতভাগ চিনতে পারে—এমন কোনো মডেল নেই। দূরত্ব আনুমানিক; নির্ভুল মাপের জন্য ক্যালিব্রেশন বা Depth Sensor দরকার। API-তে পাঠানো ছবি তৃতীয় পক্ষের সার্ভারে যায়। API key এই পেজে ব্যবহার করলে ব্রাউজারে দেখা সম্ভব; পাবলিক ওয়েবসাইটে key প্রকাশ কোরো না। API ব্যবহারে সীমা/খরচ থাকতে পারে—অজানা বিলিং চালু কোরো না।</div>
 </main>
-
-<footer>SMART VISION AI · COMPUTER VISION</footer>
-
+<footer>SMART VISION AI PRO · Balanced online-assisted mode</footer>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
 <script>
 "use strict";
-
-const video = document.getElementById("video");
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-const statusBox = document.getElementById("status");
-const results = document.getElementById("results");
-const countBox = document.getElementById("count");
-const startBtn = document.getElementById("startBtn");
-const stopBtn = document.getElementById("stopBtn");
-
-let model = null;
-let stream = null;
-let running = false;
-let busy = false;
-let animationTimer = null;
-
-const objectWidths = {
-  person:0.45, cat:0.22, dog:0.30, car:1.80, bicycle:0.60,
-  motorcycle:0.80, bus:2.50, truck:2.40, chair:0.50,
-  bottle:0.07, cup:0.09, backpack:0.30, laptop:0.33,
-  book:0.15, cell_phone:0.08, bird:0.15, horse:0.60,
-  sheep:0.45, cow:0.75, tv:0.90, keyboard:0.45,
-  mouse:0.07, umbrella:0.90, banana:0.18, apple:0.08,
-  train:2.80
-};
-
-const bengaliNames = {
-  person:"মানুষ (HUMAN)", cat:"বিড়াল (CAT)", dog:"কুকুর (DOG)",
-  car:"গাড়ি (CAR)", bicycle:"সাইকেল (BICYCLE)",
-  motorcycle:"মোটরসাইকেল", bus:"বাস (BUS)", truck:"ট্রাক (TRUCK)",
-  chair:"চেয়ার", bottle:"বোতল", cup:"কাপ", backpack:"ব্যাগ",
-  laptop:"ল্যাপটপ", book:"বই", cell_phone:"মোবাইল ফোন",
-  bird:"পাখি", horse:"ঘোড়া", sheep:"ভেড়া", cow:"গরু",
-  tv:"টেলিভিশন", keyboard:"কিবোর্ড", mouse:"মাউস",
-  umbrella:"ছাতা", banana:"কলা", apple:"আপেল", train:"ট্রেন"
-};
-
-const HORIZONTAL_FOV_DEG = 60; // প্রাথমিক অনুমান; ফোনভেদে আলাদা
-
-function angleFromCenter(centerX) {
-  const halfWidth = canvas.width / 2;
-  const focalPixels = halfWidth / Math.tan(HORIZONTAL_FOV_DEG * Math.PI / 360);
-  return Math.atan((centerX - halfWidth) / focalPixels) * 180 / Math.PI;
-}
-
-function estimateDistance(label, pixelWidth) {
-  const knownWidth = objectWidths[label];
-  if (!knownWidth || pixelWidth <= 0 || !canvas.width) return null;
-  const focalPixels = (canvas.width / 2) /
-    Math.tan(HORIZONTAL_FOV_DEG * Math.PI / 360);
-  return knownWidth * focalPixels / pixelWidth;
-}
-
-function syncCanvasSize() {
-  if (!video.videoWidth || !video.videoHeight) return;
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-}
-
-async function loadModel() {
-  try {
-    if (!window.cocoSsd) throw new Error("AI লাইব্রেরি পাওয়া যায়নি");
-    model = await cocoSsd.load();
-    statusBox.textContent = "AI প্রস্তুত ✓ এখন ক্যামেরা চালু করুন।";
-    startBtn.disabled = false;
-  } catch (error) {
-    statusBox.textContent = "AI মডেল লোড হয়নি। ইন্টারনেট সংযোগ পরীক্ষা করে পেজ রিফ্রেশ করুন।";
-    console.error(error);
-  }
-}
-
-async function startCamera() {
-  if (!model) {
-    statusBox.textContent = "AI মডেল এখনো প্রস্তুত নয়। একটু অপেক্ষা করুন।";
-    return;
-  }
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    statusBox.textContent = "এই ব্রাউজারে ক্যামেরা চালু করা যাচ্ছে না। HTTPS ওয়েবসাইট বা localhost ব্যবহার করুন।";
-    return;
-  }
-
-  stopCamera();
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({
-      audio:false,
-      video:{
-        facingMode:{ideal:"environment"},
-        width:{ideal:1280},
-        height:{ideal:720}
-      }
-    });
-
-    video.srcObject = stream;
-    await video.play();
-    syncCanvasSize();
-
-    running = true;
-    startBtn.disabled = true;
-    stopBtn.disabled = false;
-    statusBox.textContent = "ক্যামেরা চালু ✓ লাইভ AI স্ক্যান চলছে।";
-    detectLoop();
-  } catch (error) {
-    statusBox.textContent = "ক্যামেরা চালু হয়নি: " + error.message +
-      " — ব্রাউজারের Camera Permission Allow করুন।";
-    console.error(error);
-  }
-}
-
-function stopCamera() {
-  running = false;
-  if (animationTimer) clearTimeout(animationTimer);
-  animationTimer = null;
-  if (stream) {
-    stream.getTracks().forEach(track => track.stop());
-    stream = null;
-  }
-  video.srcObject = null;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  busy = false;
-  startBtn.disabled = !model;
-  stopBtn.disabled = true;
-  countBox.textContent = "0";
-  results.innerHTML = '<div class="item">ক্যামেরা বন্ধ আছে।</div>';
-  statusBox.textContent = model ? "ক্যামেরা বন্ধ।" : "AI মডেল লোড হচ্ছে…";
-}
-
-async function detectLoop() {
-  if (!running || busy || !model || video.readyState < 2) {
-    if (running) animationTimer = setTimeout(detectLoop, 150);
-    return;
-  }
-
-  busy = true;
-  try {
-    const predictions = await model.detect(video);
-    if (!running) return;
-
-    syncCanvasSize();
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    let html = "";
-    let visibleCount = 0;
-
-    for (const prediction of predictions) {
-      if (prediction.score < 0.50) continue;
-
-      visibleCount++;
-      const [x, y, width, height] = prediction.bbox;
-      const centerX = x + width / 2;
-      const angle = angleFromCenter(centerX);
-      const distance = estimateDistance(prediction.class, width);
-      const name = bengaliNames[prediction.class] || prediction.class.toUpperCase();
-      const confidence = (prediction.score * 100).toFixed(1);
-
-      ctx.strokeStyle = "#39ffad";
-      ctx.lineWidth = Math.max(2, canvas.width / 400);
-      ctx.strokeRect(x, y, width, height);
-
-      const label = name + " " + Math.round(prediction.score * 100) + "%";
-      const fontSize = Math.max(14, canvas.width / 55);
-      ctx.font = "bold " + fontSize + "px Arial";
-      const labelWidth = ctx.measureText(label).width + 12;
-      const labelY = Math.max(fontSize + 8, y);
-      ctx.fillStyle = "#00a86b";
-      ctx.fillRect(x, labelY - fontSize - 8, labelWidth, fontSize + 12);
-      ctx.fillStyle = "#ffffff";
-      ctx.fillText(label, x + 6, labelY - 3);
-
-      const distanceText = distance === null
-        ? "উপলব্ধ নয়"
-        : "প্রায় " + distance.toFixed(2) + " মিটার";
-      const angleText = (angle >= 0 ? "+" : "") + angle.toFixed(1) + "°";
-
-      html += '<div class="item"><b>' + name + '</b>' +
-        '<div class="small">Confidence: ' + confidence + '%</div>' +
-        '<div>দূরত্ব: <b>' + distanceText + '</b></div>' +
-        '<div>কোণ: <b>' + angleText + '</b></div></div>';
-    }
-
-    countBox.textContent = String(visibleCount);
-    results.innerHTML = html || '<div class="item">এখনো কোনো বস্তু শনাক্ত হয়নি।</div>';
-  } catch (error) {
-    console.error(error);
-    statusBox.textContent = "ডিটেকশনে সমস্যা হয়েছে। পেজ রিফ্রেশ করে আবার চেষ্টা করুন।";
-  } finally {
-    busy = false;
-    if (running) animationTimer = setTimeout(detectLoop, 120);
-  }
-}
-
-startBtn.addEventListener("click", startCamera);
-stopBtn.addEventListener("click", stopCamera);
-startBtn.disabled = true;
-loadModel();
+const el=id=>document.getElementById(id),video=el("video"),canvas=el("canvas"),ctx=canvas.getContext("2d");
+let model=null,stream=null,running=false,busy=false,timer=null,sceneTimer=null,apiKey="",nextId=1,trackMap=new Map();
+const FOV=60;
+const widths={person:.45,cat:.22,dog:.30,car:1.8,bicycle:.6,motorcycle:.8,bus:2.5,truck:2.4,chair:.5,bottle:.07,cup:.09,backpack:.3,laptop:.33,book:.15,cell_phone:.08,bird:.15,horse:.6,sheep:.45,cow:.75,tv:.9,keyboard:.45,mouse:.07,umbrella:.9,banana:.18,apple:.08,train:2.8};
+const bn={person:"মানুষ",cat:"বিড়াল",dog:"কুকুর",car:"গাড়ি",bicycle:"সাইকেল",motorcycle:"মোটরসাইকেল",bus:"বাস",truck:"ট্রাক",chair:"চেয়ার",bottle:"বোতল",cup:"কাপ",backpack:"ব্যাগ",laptop:"ল্যাপটপ",book:"বই",cell_phone:"মোবাইল ফোন",bird:"পাখি",horse:"ঘোড়া",sheep:"ভেড়া",cow:"গরু",tv:"টেলিভিশন",keyboard:"কিবোর্ড",mouse:"মাউস",umbrella:"ছাতা",banana:"কলা",apple:"আপেল",train:"ট্রেন"};
+function status(t){el("status").textContent=t}
+function resize(){if(video.videoWidth){canvas.width=video.videoWidth;canvas.height=video.videoHeight}}
+function angle(cx){const half=canvas.width/2,f=half/Math.tan(FOV*Math.PI/360);return Math.atan((cx-half)/f)*180/Math.PI}
+function distance(cls,pw){if(!widths[cls]||!pw)return null;const f=(canvas.width/2)/Math.tan(FOV*Math.PI/360);return widths[cls]*f/pw}
+function overlap(a,b){const x1=Math.max(a[0],b[0]),y1=Math.max(a[1],b[1]),x2=Math.min(a[0]+a[2],b[0]+b[2]),y2=Math.min(a[1]+a[3],b[1]+b[3]),i=Math.max(0,x2-x1)*Math.max(0,y2-y1);return i/(a[2]*a[3]+b[2]*b[3]-i||1)}
+function assignIds(preds){const now=Date.now(),used=new Set();return preds.map(p=>{let id=null,best=.22;for(const [k,t] of trackMap){if(used.has(k)||t.cls!==p.class)continue;const s=overlap(t.box,p.bbox);if(s>best){best=s;id=k}}if(id===null)id=nextId++;used.add(id);trackMap.set(id,{cls:p.class,box:p.bbox,time:now});return {...p,id}}).filter(p=>true)}
+async function load(){try{if(!window.cocoSsd)throw Error("AI লাইব্রেরি লোড হয়নি");model=await cocoSsd.load({base:"lite_mobilenet_v2"});el("start").disabled=false;el("analyze").disabled=false;status("AI প্রস্তুত ✓ ক্যামেরা চালু করুন।")}catch(e){status("AI লোড হয়নি—ইন্টারনেট পরীক্ষা করে রিফ্রেশ করুন।")}}
+async function start(){if(!model)return;stop(false);try{if(!navigator.mediaDevices?.getUserMedia)throw Error("ক্যামেরার জন্য HTTPS বা localhost প্রয়োজন");stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:"environment"},width:{ideal:960},height:{ideal:540}}});video.srcObject=stream;await video.play();resize();running=true;el("start").disabled=true;el("stop").disabled=false;status("ক্যামেরা চালু ✓ লাইভ স্ক্যান চলছে।");detect();scheduleScene()}catch(e){status("ক্যামেরা চালু হয়নি: "+e.message+"। Chrome permission Allow করুন এবং HTTPS লিংক ব্যবহার করুন।")}}
+function stop(show=true){running=false;clearTimeout(timer);clearTimeout(sceneTimer);if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}video.srcObject=null;ctx.clearRect(0,0,canvas.width,canvas.height);el("start").disabled=!model;el("stop").disabled=true;el("count").textContent="0";el("tracks").textContent="0";if(show)status("ক্যামেরা বন্ধ।")}
+async function detect(){if(!running||busy||video.readyState<2){if(running)timer=setTimeout(detect,200);return}busy=true;try{const preds=await model.detect(video,25,.48);if(!running)return;resize();ctx.clearRect(0,0,canvas.width,canvas.height);const found=assignIds(preds.filter(p=>p.score>=.48));let html="";for(const p of found){const [x,y,w,h]=p.bbox,cx=x+w/2,a=angle(cx),d=distance(p.class,w),name=bn[p.class]||p.class;ctx.strokeStyle="#53e6b0";ctx.lineWidth=Math.max(2,canvas.width/450);ctx.strokeRect(x,y,w,h);const label=name+" #"+p.id+" "+Math.round(p.score*100)+"%";const fs=Math.max(14,canvas.width/58);ctx.font="bold "+fs+"px Arial";const ty=Math.max(fs+10,y);ctx.fillStyle="#087d5b";ctx.fillRect(x,ty-fs-8,ctx.measureText(label).width+12,fs+12);ctx.fillStyle="#fff";ctx.fillText(label,x+6,ty-2);html+='<div class="item"><b>'+name+'</b> <span class="pill">ID '+p.id+'</span><br><span class="muted">নির্ভরযোগ্যতা: '+(p.score*100).toFixed(1)+'%</span><br>দূরত্ব: <b>'+(d===null?"মাপ নেই":d.toFixed(2)+" মিটার (আনুমানিক)")+'</b> · কোণ: <b>'+(a>=0?"+":"")+a.toFixed(1)+'°</b></div>'}el("count").textContent=found.length;el("tracks").textContent=new Set(found.map(p=>p.id)).size;el("list").innerHTML=html||'<div class="item">কোনো বস্তু শনাক্ত হয়নি।</div>'}catch(e){console.error(e);status("ডিটেকশনে সাময়িক সমস্যা হয়েছে।")}finally{busy=false;if(running)timer=setTimeout(detect,180)}}
+el("apply").onclick=()=>{apiKey=el("key").value.trim();status(apiKey?"API key এই সেশনে ব্যবহার করা হবে।":"API key দেওয়া হয়নি।");scheduleScene()};
+async function analyze(){if(!running){el("scene").textContent="আগে ক্যামেরা চালু করুন।";return}if(!apiKey){el("scene").textContent="Gemini API key যোগ করে ‘এই সেশনে ব্যবহার’ চাপুন।";return}el("scene").textContent="ছবির দৃশ্য বিশ্লেষণ হচ্ছে…";el("sceneState").textContent="চলছে";try{const snap=document.createElement("canvas");snap.width=640;snap.height=Math.round(640*video.videoHeight/video.videoWidth);snap.getContext("2d").drawImage(video,0,0,snap.width,snap.height);const data=snap.toDataURL("image/jpeg",.65).split(",")[1];const prompt="এই ছবিতে স্পষ্টভাবে দৃশ্যমান বস্তুগুলো বাংলায় তালিকা করো। প্রতিটির অবস্থান (বাম/মাঝে/ডান), রং এবং দৃশ্যমান কাজ সংক্ষেপে বলো। নিশ্চিত নও এমন পরিচয় অনুমান কোরো না। দূরত্ব বা পরিচয় নিশ্চিত বলে দাবি কোরো না।";const res=await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent",{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":apiKey},body:JSON.stringify({contents:[{parts:[{text:prompt},{inline_data:{mime_type:"image/jpeg",data}}]}],generationConfig:{temperature:.2,maxOutputTokens:450}})});const json=await res.json();if(!res.ok)throw Error(json?.error?.message||"API request failed");el("scene").textContent=json?.candidates?.[0]?.content?.parts?.map(p=>p.text||"").join("\n")||"কোনো বর্ণনা পাওয়া যায়নি।";el("sceneState").textContent="সম্পন্ন"}catch(e){el("scene").textContent="বিশ্লেষণ ব্যর্থ: "+e.message;el("sceneState").textContent="ত্রুটি"}}
+function scheduleScene(){clearTimeout(sceneTimer);const ms=Number(el("interval").value);if(running&&apiKey&&ms>0)sceneTimer=setTimeout(async()=>{await analyze();scheduleScene()},ms)}
+el("analyze").onclick=analyze;el("interval").onchange=scheduleScene;el("start").onclick=start;el("stop").onclick=()=>stop();load();
 </script>
 </body>
 </html>
